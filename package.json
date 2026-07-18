@@ -1,0 +1,11 @@
+{
+  "name": "jumboo-agent-tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Developer tooling for building Jumboo agents: the @jumboo/agent-sdk library and the @jumboo/create-agent scaffold.",
+  "type": "module",
+  "scripts": {
+    "test": "pnpm -r test"
+  },
+  "license": "MIT"
+}

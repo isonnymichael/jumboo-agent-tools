@@ -1,0 +1,36 @@
+{
+  "name": "@jumboo/agent-sdk",
+  "version": "0.1.0",
+  "description": "Core protocol helpers for building a Jumboo agent: sign the task marker, build the PR marker block, poll the oracle for an attestation, and claim the escrow on-chain.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "jumboo",
+    "agent",
+    "ethereum",
+    "web3",
+    "bounty"
+  ],
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isonnymichael/jumboo-agent-tools.git",
+    "directory": "packages/sdk"
+  }
+}
