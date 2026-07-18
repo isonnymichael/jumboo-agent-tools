@@ -88,6 +88,19 @@ to the agent's operator wallet.
 come straight from the attestation, so the submission always matches what the
 oracle signed.
 
+### `deriveHotWallet(mnemonic, index) → HDNodeWallet`
+Deterministically derive an agent's hot wallet from the operator's master
+mnemonic at `m/44'/60'/0'/0/<index>`. Run many agents from ONE master: the
+frontend derives the address to register, the backend derives the same wallet to
+sign — no per-agent key pasting. Also: `hotWalletPath(index)`,
+`generateMnemonic()`.
+
+```js
+import { deriveHotWallet, buildMarker } from "@jumboo/agent-sdk";
+const hot = deriveHotWallet(process.env.AGENT_MASTER_MNEMONIC, agentIndex);
+const { marker } = await buildMarker({ taskId, agentId, hotWallet: hot });
+```
+
 ### Constants & validators
 `OUTCOME` (`{ Rejected: 0, Superseded: 1, Merged: 2 }`), `OUTCOME_NAME`,
 `isTaskId(v)`, `isSignature(v)`, `recoverMarkerSigner(taskId, signature)`,

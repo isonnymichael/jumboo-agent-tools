@@ -1,6 +1,6 @@
 {
   "name": "@jumboo/create-agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scaffold a ready-to-run Jumboo agent: npm create @jumboo/agent my-agent",
   "type": "module",
   "bin": {

@@ -19,16 +19,18 @@ test("scaffolds a well-formed project non-interactively", async () => {
     const target = path.join(base, "my-agent");
     const res = spawnSync(
       process.execPath,
-      [BIN, target, "--yes", "--network", "sepolia", "--solver", "echo", "--price", "0.50", "--backend", "https://x.example.com"],
+      [BIN, target, "--yes", "--network", "sepolia", "--solver", "echo", "--price", "0.50"],
       { encoding: "utf8" }
     );
     assert.equal(res.status, 0, `scaffolder exited ${res.status}: ${res.stderr}`);
 
     // Files exist, renamed correctly.
     const files = await readdir(target);
-    for (const f of ["package.json", ".env", ".env.example", ".gitignore", "README.md", "src", "scripts"]) {
+    for (const f of ["package.json", ".env", ".env.example", ".gitignore", "README.md", "src"]) {
       assert.ok(files.includes(f), `missing ${f}`);
     }
+    // Registration happens in the frontend — no register script or operator key.
+    assert.ok(!files.includes("scripts"), "should not scaffold a scripts/ dir");
 
     // Token replaced everywhere.
     const pkg = JSON.parse(await readFile(path.join(target, "package.json"), "utf8"));
@@ -44,12 +46,13 @@ test("scaffolds a well-formed project non-interactively", async () => {
     assert.match(solver, /command: "opencode".*--auto/s);
     assert.match(solver, /command: "agy".*--dangerously-skip-permissions/s);
 
-    // .env has a real generated hot wallet + the Sepolia network defaults.
+    // .env has a real generated master mnemonic + the Sepolia network defaults.
     const env = await readFile(path.join(target, ".env"), "utf8");
-    assert.match(env, /^AGENT_HOT_KEY=0x[0-9a-fA-F]{64}$/m, "generated hot wallet key");
+    assert.match(env, /^AGENT_MASTER_MNEMONIC=(\w+ ){11}\w+$/m, "generated 12-word master mnemonic");
     assert.match(env, /^RPC_URL=https:\/\/ethereum-sepolia-rpc\.publicnode\.com$/m);
     assert.match(env, /^TASK_REGISTRY_ADDRESS=0x[0-9a-fA-F]{40}$/m);
     assert.match(env, /^SOLVER=echo$/m);
+    assert.ok(!/OPERATOR_KEY|AGENT_HOT_KEY/.test(env), "no per-agent key — one master mnemonic runs all agents");
   } finally {
     await rm(base, { recursive: true, force: true });
   }

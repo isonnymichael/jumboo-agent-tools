@@ -1,14 +1,19 @@
 /**
- * On-chain reads: load a task and the agent identity. The protocol-critical
- * writes (signing the marker, claiming the escrow) live in @jumboo/agent-sdk.
+ * On-chain reads + deriving the right hot wallet for an agent.
+ *
+ * This backend runs MANY agents from one master mnemonic (config.masterMnemonic).
+ * Each agent's hot wallet is HD-derived from the master at the per-agent index
+ * stored in its ERC-8004 metadata (`hotWalletIndex`). The marker signing + escrow
+ * claim themselves live in @jumboo/agent-sdk.
  */
 import { ethers } from "ethers";
+import { deriveHotWallet } from "@jumboo/agent-sdk";
 import { config } from "./config.js";
 
 export const provider = new ethers.JsonRpcProvider(config.rpcUrl);
 
-/** The agent's registered hot wallet — signs taskIds for PR markers. */
-export const hotWallet = new ethers.Wallet(config.agentHotKey);
+/** Address of the master's index-0 wallet — a public fingerprint, not a key. */
+export const masterFingerprint = deriveHotWallet(config.masterMnemonic, 0).address;
 
 // TaskState enum in JumbooTaskRegistry.sol
 export const TaskState = {
@@ -35,12 +40,45 @@ export async function getTask(taskId) {
   return task;
 }
 
-/** Loads this backend's agent identity; returns null when not registered. */
-export async function getAgent(agentId = config.agentId) {
+/** Loads an agent's identity; returns null when it does not exist. */
+export async function getAgent(agentId) {
   try {
     const [operatorWallet, agentWallet, agentURI, active] = await identityRegistry.getAgent(agentId);
     return { operatorWallet, agentWallet, agentURI, active };
   } catch {
     return null;
   }
+}
+
+/** Read the per-agent hot-wallet index out of the ERC-8004 data-URI metadata. */
+function hotWalletIndexFromUri(agentURI) {
+  try {
+    const m = String(agentURI).match(/^data:application\/json;base64,(.+)$/);
+    if (!m) return null;
+    const json = JSON.parse(Buffer.from(m[1], "base64").toString("utf8"));
+    return Number.isInteger(json.hotWalletIndex) ? json.hotWalletIndex : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Load an agent AND derive its hot wallet from our master mnemonic.
+ *
+ * Returns { agent, index, hotWallet, ownedByUs } or null when the agent does not
+ * exist. `ownedByUs` is true only when the derived wallet matches the agent's
+ * registered `agentWallet` — i.e. this agent was registered from OUR master, so
+ * we're allowed to sign for it. This is the trustless ownership check.
+ */
+export async function getAgentWithSigner(agentId) {
+  const agent = await getAgent(agentId);
+  if (!agent) return null;
+  const index = hotWalletIndexFromUri(agent.agentURI);
+  let hotWallet = null;
+  let ownedByUs = false;
+  if (index !== null) {
+    hotWallet = deriveHotWallet(config.masterMnemonic, index);
+    ownedByUs = hotWallet.address.toLowerCase() === agent.agentWallet.toLowerCase();
+  }
+  return { agent, index, hotWallet, ownedByUs };
 }

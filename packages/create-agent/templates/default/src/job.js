@@ -18,7 +18,7 @@ import path from "node:path";
 import { ethers } from "ethers";
 import { buildMarker, claim, OUTCOME_NAME } from "@jumboo/agent-sdk";
 import { config } from "./config.js";
-import { provider, hotWallet } from "./chain.js";
+import { provider } from "./chain.js";
 import { getSolver } from "./solver.js";
 import {
   parseRepoUrl,
@@ -71,6 +71,7 @@ export function jobView(job) {
   return {
     jobId: job.id,
     taskId: job.taskId,
+    agentId: job.agentId ?? null,
     path: job.path,
     caller: job.caller,
     solver: job.solver,
@@ -88,10 +89,12 @@ export function jobView(job) {
 }
 
 /** Registers a queued job and kicks off the async pipeline. */
-export function startJob({ taskId, task, caller, path: accessPath }) {
+export function startJob({ taskId, agentId, task, caller, path: accessPath, hotWallet }) {
   const job = {
     id: randomBytes(8).toString("hex"),
     taskId,
+    agentId,
+    hotWallet, // the agent's derived hot wallet (never serialized in jobView)
     task,
     caller,
     path: accessPath, // "compete" | "hire"
@@ -113,7 +116,7 @@ export function startJob({ taskId, task, caller, path: accessPath }) {
 }
 
 async function runJob(job) {
-  const { task, taskId } = job;
+  const { task, taskId, agentId, hotWallet } = job;
   const parsed = parseRepoUrl(task.repoUrl);
   const repoDir = path.join(config.workdir, job.id);
   const branch = `jumboo/task-${taskId.slice(2, 10)}`;
@@ -148,7 +151,7 @@ async function runJob(job) {
       [
         "-c", `user.name=${user}`,
         "-c", `user.email=${user}@users.noreply.github.com`,
-        "commit", "-m", `Jumboo task ${taskId.slice(0, 10)}… (agent #${config.agentId})`,
+        "commit", "-m", `Jumboo task ${taskId.slice(0, 10)}… (agent #${agentId})`,
       ],
       { cwd: repoDir }
     );
@@ -168,7 +171,7 @@ async function runJob(job) {
     }
 
     // 5. Build the marker block (SDK signs the RAW taskId bytes for us) ------
-    const { marker } = await buildMarker({ taskId, agentId: config.agentId, hotWallet });
+    const { marker } = await buildMarker({ taskId, agentId, hotWallet });
     job.markerBlock = marker;
 
     // 6. Open the PR (or log the markers in DRY_RUN) -------------------------
@@ -187,7 +190,7 @@ async function runJob(job) {
     }
     const base = await getDefaultBranch(parsed.owner, parsed.repo);
     const pr = await createPullRequest(parsed.owner, parsed.repo, {
-      title: `Jumboo task ${taskId.slice(0, 10)}… (agent #${config.agentId})`,
+      title: `Jumboo task ${taskId.slice(0, 10)}… (agent #${agentId})`,
       head: prHead,
       base,
       body: `${(job.summary || "").trim()}\n\n---\n${marker}`,
@@ -198,12 +201,16 @@ async function runJob(job) {
     // 7. Wait for the oracle's attestation, then claim on-chain (SDK) --------
     step = "awaiting-merge";
     setStatus(job, "awaiting-merge", `polling ${config.oracleUrl} every ${config.attestationPollSec}s`);
-    const txWallet = new ethers.Wallet(config.agentTxKey, provider); // pays claim gas
+    // Gas payer: a shared funded wallet if AGENT_TX_KEY is set, else this agent's
+    // own derived hot wallet (which then needs a little ETH).
+    const txWallet = config.agentTxKey
+      ? new ethers.Wallet(config.agentTxKey, provider)
+      : hotWallet.connect(provider);
     const { attestation, receipt } = await claim({
       oracleUrl: config.oracleUrl,
       registryAddress: config.validationRegistryAddress,
       taskId,
-      agentId: config.agentId,
+      agentId,
       wallet: txWallet,
       intervalMs: config.attestationPollSec * 1000,
       onPoll: ({ error }) => {

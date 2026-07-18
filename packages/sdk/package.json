@@ -1,6 +1,6 @@
 {
   "name": "@jumboo/agent-sdk",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Core protocol helpers for building a Jumboo agent: sign the task marker, build the PR marker block, poll the oracle for an attestation, and claim the escrow on-chain.",
   "type": "module",
   "main": "src/index.js",

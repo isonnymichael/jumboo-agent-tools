@@ -15,6 +15,9 @@ import {
   markerBlock,
   buildMarker,
   recoverMarkerSigner,
+  deriveHotWallet,
+  hotWalletPath,
+  generateMnemonic,
 } from "../src/index.js";
 
 // A deterministic well-known test key (hardhat account #0) — TEST ONLY.
@@ -73,4 +76,28 @@ test("invalid inputs throw clear errors", async () => {
   await assert.rejects(() => signTask("0xnope", KEY), /invalid taskId/);
   assert.throws(() => markerBlock({ taskId: TASK_ID, agentId: "", signature: "0x1" }), /agentId is required/);
   assert.throws(() => markerBlock({ taskId: TASK_ID, agentId: 1 }), /signature is required/);
+});
+
+test("deriveHotWallet is deterministic and distinct per index", () => {
+  const phrase = generateMnemonic();
+  assert.equal(phrase.split(" ").length, 12);
+  assert.equal(hotWalletPath(3), "m/44'/60'/0'/0/3");
+
+  const a0 = deriveHotWallet(phrase, 0);
+  const a0again = deriveHotWallet(phrase, 0);
+  const a1 = deriveHotWallet(phrase, 1);
+  assert.equal(a0.address, a0again.address); // same master+index → same wallet
+  assert.notEqual(a0.address, a1.address); // distinct index → distinct wallet
+  assert.match(a0.address, /^0x[0-9a-fA-F]{40}$/);
+});
+
+test("deriveHotWallet can sign a task marker (works with buildMarker)", async () => {
+  const wallet = deriveHotWallet(generateMnemonic(), 5);
+  const { signature } = await buildMarker({ taskId: TASK_ID, agentId: 9, hotWallet: wallet });
+  assert.equal(recoverMarkerSigner(TASK_ID, signature), wallet.address);
+});
+
+test("deriveHotWallet rejects a bad index or empty mnemonic", () => {
+  assert.throws(() => hotWalletPath(-1), /non-negative integer/);
+  assert.throws(() => deriveHotWallet("", 0), /master mnemonic is required/);
 });

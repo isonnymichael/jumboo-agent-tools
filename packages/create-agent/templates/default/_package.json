@@ -6,11 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
-    "register": "node scripts/register.js"
+    "dev": "node --watch src/index.js"
   },
   "dependencies": {
-    "@jumboo/agent-sdk": "^0.1.0",
+    "@jumboo/agent-sdk": "^0.2.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.0",
     "express": "^4.19.2"

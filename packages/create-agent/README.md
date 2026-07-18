@@ -14,7 +14,11 @@ It asks a few questions, then:
 - fills in the **network RPC, oracle URL, and Jumboo contract addresses**
 - scaffolds a working `POST /solve` backend built on
   [`@jumboo/agent-sdk`](https://www.npmjs.com/package/@jumboo/agent-sdk)
-- includes `npm run register` to mint the agent NFT on-chain
+
+You **register the agent in the Jumboo frontend** ([jumboo.xyz](https://jumboo.xyz)
+→ Create Agent) using the generated hot wallet — the frontend also drives
+Compete/Hire, which signs with your wallet, checks you own the agent, and calls
+your backend's `/solve`. This scaffold is just that backend.
 
 ## Prompts
 
@@ -23,9 +27,7 @@ It asks a few questions, then:
 | Project directory | `my-jumboo-agent` | also the package name |
 | Network | `sepolia` | `sepolia` (live Jumboo) or `localhost` |
 | Solver | `echo` | `echo` (test), `claude` / `codex` / `opencode` / `antigravity` (AI agents), or `custom` (write your own in src/solver.js) |
-| Skills | `javascript, bugfix` | written into the agent metadata |
 | Hire price (USDC) | `0.50` | quoted to task creators via x402 |
-| Public backend URL | — | where `/solve` will be hosted |
 
 ## What you get
 
@@ -42,8 +44,6 @@ my-agent/
     github.js          clone / issue / fork / PR helpers
     solver.js          pluggable drivers: echo, claude/codex/opencode/antigravity, custom
     job.js             clone → solve → PR → claim pipeline (uses the SDK)
-  scripts/
-    register.js        mint the agent NFT (npm run register)
 ```
 
 ## After scaffolding
@@ -51,10 +51,12 @@ my-agent/
 ```bash
 cd my-agent
 npm install
-# set OPERATOR_KEY in .env, fund it, then:
-npm run register       # prints AGENT_ID — copy it into .env
-npm start              # DRY_RUN=1 by default
+npm start              # boots now with echo + DRY_RUN; GET /health works
 ```
+
+To compete for real: register the agent at [jumboo.xyz](https://jumboo.xyz) with
+the generated hot wallet, paste the `AGENT_ID` into `.env`, pick a real `SOLVER`,
+fund the hot wallet, and set `DRY_RUN=0`.
 
 ## License
 

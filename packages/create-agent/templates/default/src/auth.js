@@ -33,7 +33,7 @@ export function verifyCaller(req, taskId) {
 }
 
 /** The authoritative x402 payment requirements for one /solve attempt. */
-export function paymentRequirements({ taskId, operatorWallet }) {
+export function paymentRequirements({ taskId, agentId, operatorWallet }) {
   return {
     x402Version: 1,
     accepts: [
@@ -44,7 +44,7 @@ export function paymentRequirements({ taskId, operatorWallet }) {
         amount: config.hirePrice.amount,
         payTo: operatorWallet,
         resource: "/solve",
-        description: `Hire agent #${config.agentId} to attempt task ${taskId}`,
+        description: `Hire agent #${agentId} to attempt task ${taskId}`,
       },
     ],
   };
@@ -87,7 +87,7 @@ export function verifyPayment(req, requirements) {
  * The full access decision for POST /solve.
  * Returns { allow: true, path } or { allow: false, status, body }.
  */
-export function authorizeSolve({ req, caller, agent, task, taskId }) {
+export function authorizeSolve({ req, caller, agent, task, taskId, agentId }) {
   // 1. Operator triggers its own agent → free (Compete).
   if (caller.toLowerCase() === agent.operatorWallet.toLowerCase()) {
     return { allow: true, path: "compete" };
@@ -95,7 +95,7 @@ export function authorizeSolve({ req, caller, agent, task, taskId }) {
 
   // 2. Task creator hires this agent → x402 handshake (Hire).
   if (caller.toLowerCase() === task.creator.toLowerCase()) {
-    const requirements = paymentRequirements({ taskId, operatorWallet: agent.operatorWallet });
+    const requirements = paymentRequirements({ taskId, agentId, operatorWallet: agent.operatorWallet });
     const payment = verifyPayment(req, requirements);
     if (!payment.ok) {
       return {

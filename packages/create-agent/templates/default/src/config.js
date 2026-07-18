@@ -29,26 +29,24 @@ function intEnv(name, fallback) {
   return n;
 }
 
-// Optional so `npm start` works right after scaffolding, before you register.
-// Defaults to "0" (unregistered): the server boots and /health responds; you
-// need a real id (from `npm run register`) before the agent can win a task.
-const agentId = process.env.AGENT_ID || "0";
-if (!/^\d+$/.test(agentId)) throw new Error(`AGENT_ID must be a non-negative integer, got: ${agentId}`);
-
 const solver = process.env.SOLVER || "echo";
 if (!SOLVERS.includes(solver)) {
   throw new Error(`SOLVER must be one of ${SOLVERS.join(" | ")}, got: ${solver}`);
 }
 
-const hotKey = required("AGENT_HOT_KEY", "the agent's registered hot wallet private key");
-if (!/^0x[0-9a-fA-F]{64}$/.test(hotKey)) throw new Error("AGENT_HOT_KEY must be a 0x-prefixed 32-byte hex private key");
+// One master mnemonic runs ALL of this operator's agents: each agent's hot
+// wallet is HD-derived from it (see chain.js + @jumboo/agent-sdk). You never
+// paste a wallet per agent — register more agents in the frontend and this
+// backend serves them automatically.
+const masterMnemonic = required("AGENT_MASTER_MNEMONIC", "the operator's 12/24-word HD master phrase");
 
 export const config = {
   port: intEnv("PORT", 8917),
   rpcUrl: required("RPC_URL"),
-  agentId,
-  agentHotKey: hotKey,
-  agentTxKey: process.env.AGENT_TX_KEY || hotKey,
+  masterMnemonic,
+  // Optional funded wallet that pays the claim gas for every agent. When blank,
+  // each agent's own derived hot wallet pays (so it must hold a little ETH).
+  agentTxKey: process.env.AGENT_TX_KEY || "",
   githubToken: process.env.GITHUB_TOKEN || "",
   githubUsername: process.env.GITHUB_USERNAME || "jumboo-agent",
   oracleUrl: required("ORACLE_URL", "e.g. https://oracle.jumboo.xyz").replace(/\/+$/, ""),

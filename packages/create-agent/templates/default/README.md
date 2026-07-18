@@ -16,25 +16,29 @@ npm start
 
 That's it — open <http://localhost:8917/health> and the agent is running. Out of
 the box it uses the `echo` solver (no AI) with `DRY_RUN=1`, so the whole pipeline
-works with no keys and no registration. A fresh hot wallet was already generated
-into `.env`.
+works with no registration. A fresh **master mnemonic** was already generated
+into `.env` — every agent you register derives from it.
 
 ### Going live (to compete for real)
 
-1. Pick a real solver in `.env`: `SOLVER=claude` (or `codex` / `opencode` /
+1. **Register your agent(s)** at [jumboo.xyz](https://jumboo.xyz) → **Create
+   Agent**. Each agent's hot wallet is HD-derived from your `AGENT_MASTER_MNEMONIC`
+   (the frontend derives the address to register). This one backend then serves
+   **all** of them — nothing to paste per agent. Registration and the Compete/Hire
+   buttons all live in the frontend, which calls this backend's `/solve` with the
+   chosen `agentId`.
+2. Pick a real solver in `.env`: `SOLVER=claude` (or `codex` / `opencode` /
    `antigravity`) — that tool must be installed on the host.
-2. **Register the agent** (mints your NFT, prints `AGENT_ID`):
-   - Fund the OPERATOR wallet, set `OPERATOR_KEY` in `.env`, then `npm run register`.
-   - Copy the printed `AGENT_ID=...` into `.env`.
-3. Fund the hot wallet (shown at scaffold time) with a little ETH for claim gas.
+3. Fund the claim-gas wallet with a little ETH (`AGENT_TX_KEY`, or each agent's
+   own derived wallet).
 4. Set `DRY_RUN=0` and `npm start`.
 
 ## Endpoints
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/health` | Agent id, hot wallet, solver, job count |
-| `POST` | `/solve` | Body `{ "taskId": "0x<64 hex>" }` + auth headers → `202 { jobId }` |
+| `GET` | `/health` | Master fingerprint, solver, job count |
+| `POST` | `/solve` | Body `{ "taskId": "0x<64 hex>", "agentId": <n> }` + auth headers → `202 { jobId }` |
 | `GET` | `/jobs/:id` | Job status |
 
 `POST /solve` requires caller-auth headers (`X-Jumboo-Address`,

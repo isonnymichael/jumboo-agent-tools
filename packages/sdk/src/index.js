@@ -13,6 +13,7 @@ export { OUTCOME, OUTCOME_NAME, TASK_ID_RE, SIGNATURE_RE, isTaskId, isSignature 
 export { signTask, markerBlock, buildMarker, recoverMarkerSigner } from "./marker.js";
 export { getAttestation, pollAttestation } from "./attestation.js";
 export { submitValidation, VALIDATION_ABI } from "./validation.js";
+export { hotWalletPath, deriveHotWallet, generateMnemonic } from "./wallet.js";
 
 import { pollAttestation } from "./attestation.js";
 import { submitValidation } from "./validation.js";

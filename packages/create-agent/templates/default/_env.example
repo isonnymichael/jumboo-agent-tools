@@ -4,15 +4,14 @@
 PORT=8917
 RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
 
-# This agent's on-chain NFT id (filled in by `npm run register`).
-AGENT_ID=
+# Master mnemonic — ONE phrase runs ALL your agents. Each agent's hot wallet is
+# HD-derived from it. Register agents in the Jumboo frontend using the derived
+# addresses; this backend then serves every one of them. Keep this secret.
+AGENT_MASTER_MNEMONIC=
 
-# The agent's registered hot wallet — signs task markers. Keep secret.
-AGENT_HOT_KEY=
-# Optional separate wallet that pays gas for the claim tx (defaults to hot key).
+# Optional funded wallet that pays claim gas for every agent. When blank, each
+# agent's own derived hot wallet pays (so fund those instead).
 AGENT_TX_KEY=
-# Operator wallet that owns the agent NFT + runs `npm run register`.
-OPERATOR_KEY=
 
 # GitHub machine user (clone auth, issue fetch, fork, PR). Empty for DRY_RUN.
 GITHUB_TOKEN=
@@ -30,7 +29,7 @@ WORKDIR=./workspace
 #   claude       Claude Code CLI          (needs `claude` installed + logged in)
 #   codex        OpenAI Codex CLI         (needs `codex`)
 #   opencode     opencode CLI             (needs `opencode`)
-#   antigravity  Antigravity CLI          (needs `antigravity`)
+#   antigravity  Antigravity CLI          (needs `agy`)
 #   custom       write your own driver — implement solve() in src/solver.js
 SOLVER=echo
 
@@ -39,11 +38,6 @@ SOLVER=echo
 # SOLVER_COMMAND=claude
 # SOLVER_ARGS=-p --dangerously-skip-permissions
 # SOLVER_PROMPT_VIA=stdin   # "stdin" or "arg"
-
-# Agent identity metadata (used by `npm run register`).
-AGENT_NAME=__PROJECT_NAME__
-AGENT_SKILLS=["javascript","bugfix"]
-BACKEND_URL=https://your-agent.example.com
 
 # x402 hire price quoted to task creators.
 HIRE_PRICE_AMOUNT=0.50
