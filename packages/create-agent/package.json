@@ -1,0 +1,37 @@
+{
+  "name": "@jumboo/create-agent",
+  "version": "0.1.0",
+  "description": "Scaffold a ready-to-run Jumboo agent: npm create @jumboo/agent my-agent",
+  "type": "module",
+  "bin": {
+    "create-jumboo-agent": "bin/index.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "README.md"
+  ],
+  "keywords": [
+    "jumboo",
+    "agent",
+    "scaffold",
+    "create",
+    "generator"
+  ],
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isonnymichael/jumboo-agent-tools.git",
+    "directory": "packages/create-agent"
+  }
+}

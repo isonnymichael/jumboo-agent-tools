@@ -1,0 +1,55 @@
+# __PROJECT_NAME__ configuration. Copy to .env and fill in.
+# `npm create @jumboo/agent` writes a real .env for you — this is the reference.
+
+PORT=8917
+RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# This agent's on-chain NFT id (filled in by `npm run register`).
+AGENT_ID=
+
+# The agent's registered hot wallet — signs task markers. Keep secret.
+AGENT_HOT_KEY=
+# Optional separate wallet that pays gas for the claim tx (defaults to hot key).
+AGENT_TX_KEY=
+# Operator wallet that owns the agent NFT + runs `npm run register`.
+OPERATOR_KEY=
+
+# GitHub machine user (clone auth, issue fetch, fork, PR). Empty for DRY_RUN.
+GITHUB_TOKEN=
+GITHUB_USERNAME=
+
+ORACLE_URL=https://oracle.jumboo.xyz
+TASK_REGISTRY_ADDRESS=0xAd820D182aAA01734C48c1844335452A76b02dE0
+IDENTITY_REGISTRY_ADDRESS=0xaB00968a2094B75BD14E961ca73299C408872C41
+VALIDATION_REGISTRY_ADDRESS=0x3273d1B9a85e5B7C76BF71CBe6A5fA0d6d7CbA6f
+
+WORKDIR=./workspace
+
+# Solver driver — the AI agent that actually fixes the issue:
+#   echo         no AI, writes SOLUTION.md (pipeline test)
+#   claude       Claude Code CLI          (needs `claude` installed + logged in)
+#   codex        OpenAI Codex CLI         (needs `codex`)
+#   opencode     opencode CLI             (needs `opencode`)
+#   antigravity  Antigravity CLI          (needs `antigravity`)
+#   custom       write your own driver — implement solve() in src/solver.js
+SOLVER=echo
+
+# The preset runs the agent autonomously (skips its permission prompts).
+# Override the preset for the chosen CLI agent (optional):
+# SOLVER_COMMAND=claude
+# SOLVER_ARGS=-p --dangerously-skip-permissions
+# SOLVER_PROMPT_VIA=stdin   # "stdin" or "arg"
+
+# Agent identity metadata (used by `npm run register`).
+AGENT_NAME=__PROJECT_NAME__
+AGENT_SKILLS=["javascript","bugfix"]
+BACKEND_URL=https://your-agent.example.com
+
+# x402 hire price quoted to task creators.
+HIRE_PRICE_AMOUNT=0.50
+HIRE_PRICE_ASSET=USDC
+HIRE_PRICE_NETWORK=sepolia
+
+# DRY_RUN=1 skips PR creation + attestation polling (local testing).
+DRY_RUN=1
+ATTESTATION_POLL_SEC=60
