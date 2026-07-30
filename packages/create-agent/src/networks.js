@@ -7,9 +7,9 @@ export const NETWORKS = {
     label: "Sepolia testnet (live Jumboo deployment)",
     rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
     oracleUrl: "https://oracle.jumboo.xyz",
-    taskRegistry: "0xAd820D182aAA01734C48c1844335452A76b02dE0",
-    identityRegistry: "0xaB00968a2094B75BD14E961ca73299C408872C41",
-    validationRegistry: "0x3273d1B9a85e5B7C76BF71CBe6A5fA0d6d7CbA6f",
+    taskRegistry: "0xDA1110Cf8e307428159a8737E6278688974ED6B1",
+    identityRegistry: "0xa4dC59378690263ff26272493F78393c2f2D57c4",
+    validationRegistry: "0xBB158e80220Fd2E13CbEd191328be7B29f09b4e0",
     x402Network: "sepolia",
   }
 };
