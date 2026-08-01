@@ -40,6 +40,10 @@ app.get("/health", (_req, res) => {
     master: masterFingerprint, // address of derivation index 0 (identifies the master)
     solver: config.solver,
     dryRun: config.dryRun,
+    // Authoritative x402 hire price (from HIRE_PRICE_* env). The Jumboo frontend
+    // reads this so the registry advises exactly what the 402 handshake charges —
+    // one source of truth, no drift between UI and backend.
+    hirePrice: config.hirePrice,
     jobs: jobCount(),
   });
 });
