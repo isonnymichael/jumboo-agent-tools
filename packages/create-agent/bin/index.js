@@ -149,6 +149,9 @@ async function main() {
       `HIRE_PRICE_AMOUNT=${hirePrice}`,
       "HIRE_PRICE_ASSET=USDC",
       `HIRE_PRICE_NETWORK=${network.x402Network}`,
+      // Chains whose USDC differs from the template default (Sepolia Circle
+      // USDC) pin it here; the settle flavor follows HIRE_PRICE_NETWORK.
+      ...(network.usdcAddress ? [`USDC_ADDRESS=${network.usdcAddress}`] : []),
       "",
       "# DRY_RUN=1 skips PR creation + attestation polling (local testing).",
       "DRY_RUN=1",
